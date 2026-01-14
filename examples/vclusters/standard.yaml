@@ -1,0 +1,15 @@
+apiVersion: helm.hops.ops.com.ai/v1alpha1
+kind: VCluster
+metadata:
+  name: my-vcluster
+  namespace: example-env
+spec:
+  clusterName: example-cluster
+  labels:
+    team: platform
+  namespace: vcluster-my-vcluster
+  values:
+    sync:
+      toHost:
+        ingresses:
+          enabled: true

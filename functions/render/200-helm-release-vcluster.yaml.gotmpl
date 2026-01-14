@@ -1,0 +1,52 @@
+# code: language=yaml
+#
+# Helm release for vCluster
+#
+# vCluster creates virtual Kubernetes clusters that run inside regular namespaces.
+# Each virtual cluster has its own API server, control plane, and synced resources.
+#
+
+{{- $vc := $state.vcluster }}
+
+---
+apiVersion: helm.m.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ $vc.releaseName }}
+  annotations:
+    {{ setResourceNameAnnotation "helm-release-vcluster" }}
+  labels: {{ $vc.labels | toJson }}
+spec:
+  managementPolicies: {{ $vc.managementPolicies | toJson }}
+  forProvider:
+    chart:
+      name: vcluster
+      repository: https://charts.loft.sh
+      version: v0.30.4
+    namespace: {{ $vc.namespace }}
+    {{- if $vc.overrideAllValues }}
+    values:
+      {{- toYaml $vc.overrideAllValues | nindent 6 }}
+    {{- else }}
+    values:
+      # Sync configuration - what resources to sync between virtual and host cluster
+      sync:
+        toHost:
+          pods:
+            enabled: true
+          services:
+            enabled: true
+          persistentvolumeclaims:
+            enabled: true
+          configmaps:
+            enabled: true
+          secrets:
+            enabled: true
+      {{- if $vc.values }}
+      {{- toYaml $vc.values | nindent 6 }}
+      {{- end }}
+    {{- end }}
+  rollbackLimit: 3
+  providerConfigRef:
+    name: {{ $vc.providerConfigRef.name }}
+    kind: {{ $vc.providerConfigRef.kind }}

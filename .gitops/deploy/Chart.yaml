@@ -1,0 +1,5 @@
+apiVersion: v2
+name: helm-vcluster
+version: 0.0.0
+description: GitOps packaging for the vCluster Crossplane configuration
+appVersion: v0.30.4
